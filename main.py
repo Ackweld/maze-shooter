@@ -27,10 +27,6 @@ pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_ARROW)
 pygame.mouse.set_visible(False)  # Hide the default cursor
 crosshair_width, crosshair_height = crosshair_image.get_size()
 
-enemy_hit_sound = pygame.mixer.Sound(
-    f"{SOUND_FX_FOLDER}/projectile_impact.wav")
-punch_sound = pygame.mixer.Sound(f"{SOUND_FX_FOLDER}/punch.wav")
-
 
 def game_over_screen():
     """Displays the 'You Died' screen with options to restart or exit."""
@@ -138,7 +134,7 @@ def main():
 
                 # Check for collision with player
                 if enemy.check_attack(player):
-                    punch_sound.play()
+                    sound_manager.play("punch")
                     player.health -= 2
 
             # Update projectiles
