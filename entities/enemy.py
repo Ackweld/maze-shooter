@@ -17,7 +17,7 @@ class Enemy:
         self.enemy_image = pygame.transform.smoothscale(
             self.enemy_image, (GAME_RULES["ENEMY_SIZE"], GAME_RULES["ENEMY_SIZE"]))
         self.enemy_death_sound = pygame.mixer.Sound(
-            f"{SOUND_FX_FOLDER}/death.wav")
+            f"{SOUND_FX_FOLDER}/explode.wav")
         while True:
             x = random.randint(1, MAZE_WIDTH - 2)
             y = random.randint(1, MAZE_HEIGHT - 2)

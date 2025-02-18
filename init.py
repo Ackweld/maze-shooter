@@ -20,7 +20,11 @@ def initialize_game():
     crosshair_width, crosshair_height = crosshair_image.get_size()
 
     # Initialize the mixer for sound
+
     pygame.mixer.init()
+    pygame.mixer.set_num_channels(48)
+
+    print("Nr of channels: ", pygame.mixer.get_num_channels())
 
     # Background music
     # Load your soundtrack

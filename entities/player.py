@@ -7,6 +7,7 @@ from constants.game_rules import GAME_RULES
 from constants.maze_variants import MAZE, MAZE_WIDTH, MAZE_HEIGHT
 from constants.colors import COLORS
 from entities.projectile import Projectile
+from utils.sound_manager import sound_manager
 
 
 class Player:
@@ -43,8 +44,7 @@ class Player:
             projectile = Projectile(
                 self.x, self.y, mouse_x + camera_x, mouse_y + camera_y, True, "plasma_gun_projectile.png")
             projectiles.append(projectile)
-            # shoot_sounds[self.sound_index].play()
-            # self.sound_index = (self.sound_index + 1) % len(shoot_sounds)
+            sound_manager.play("plasma_gun")
 
         if self.weapon == "mini_gun":
             current_time = pygame.time.get_ticks()
@@ -58,13 +58,7 @@ class Player:
                 projectile = Projectile(
                     self.x, self.y, mouse_x + camera_x, mouse_y + camera_y, True, "mini_gun_projectile.png")
                 projectiles.append(projectile)
-
-                # Play shoot sound
-                # mini_gun_sounds[self.sound_index].play()
-                # self.sound_index = (self.sound_index +
-                #                     1) % len(mini_gun_sounds)
-
-                # Update the last shot time
+                sound_manager.play("mini_gun")
                 self.last_shot_time = current_time
 
     def can_move(self, x, y, maze):

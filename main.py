@@ -9,24 +9,12 @@ from entities.maze import Maze
 from init import initialize_game
 from entities.player import Player
 from entities.enemy import Enemy
+from utils.sound_manager import sound_manager
 
-# Initialize pygame
-pygame.init()
-
-# Set the display size
-info = pygame.display.Info()
-WIDTH, HEIGHT = info.current_w, info.current_h
-
-# Create the window with borderless fullscreen (Windowed Fullscreen mode)
-# screen = pygame.display.set_mode(
-#     (WIDTH, HEIGHT), pygame.NOFRAME | pygame.FULLSCREEN)
 screen = pygame.display.set_mode(
     (SCREEN_WIDTH, SCREEN_HEIGHT))
 
-pygame.display.set_caption("Pygame Maze with Camera Movement")
-
-PLAYER_SPEED = 3
-ENEMY_SPEED = 1
+pygame.display.set_caption("MAZE SHOOTER")
 
 crosshair_image = pygame.image.load("assets/images/crosshair.png")
 crosshair_image = pygame.transform.scale(
@@ -39,24 +27,8 @@ pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_ARROW)
 pygame.mouse.set_visible(False)  # Hide the default cursor
 crosshair_width, crosshair_height = crosshair_image.get_size()
 
-# Initialize the mixer for sound
-pygame.mixer.init()
-
-# Load shooting sounds for round-robin
-shoot_sounds = [
-    pygame.mixer.Sound(f"{SOUND_FX_FOLDER}/shoot_sound_1.wav"),
-    pygame.mixer.Sound(f"{SOUND_FX_FOLDER}/shoot_sound_2.wav"),
-    pygame.mixer.Sound(f"{SOUND_FX_FOLDER}/shoot_sound_3.wav"),
-    pygame.mixer.Sound(f"{SOUND_FX_FOLDER}/shoot_sound_4.wav")
-]
-mini_gun_sounds = [
-    pygame.mixer.Sound(f"{SOUND_FX_FOLDER}/mini_gun_sound_1.wav"),
-    pygame.mixer.Sound(f"{SOUND_FX_FOLDER}/mini_gun_sound_1.wav"),
-    pygame.mixer.Sound(f"{SOUND_FX_FOLDER}/mini_gun_sound_1.wav"),
-    pygame.mixer.Sound(f"{SOUND_FX_FOLDER}/mini_gun_sound_1.wav"),
-]
-
-enemy_hit_sound = pygame.mixer.Sound(f"{SOUND_FX_FOLDER}/enemy_hit.wav")
+enemy_hit_sound = pygame.mixer.Sound(
+    f"{SOUND_FX_FOLDER}/projectile_impact.wav")
 punch_sound = pygame.mixer.Sound(f"{SOUND_FX_FOLDER}/punch.wav")
 
 
@@ -126,31 +98,32 @@ def main():
         while running:
             clock.tick(GAME_RULES["FPS"])
 
-            if kill_count > 3:
+            # Update weapon if kill count is greater than 0
+            if kill_count > 0:
                 player.weapon = "mini_gun"
-            # # Handle events
-            if player.weapon == "plasma_gun":
-                for event in pygame.event.get():
-                    if event.type == pygame.QUIT:
-                        pygame.quit()
-                    elif event.type == pygame.MOUSEBUTTONDOWN:
-                        if event.button == 1:  # Left mouse button
+
+            # Handle events
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    return  # Ensure the program exits cleanly after quitting
+
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    if event.button == 1:  # Left mouse button
+                        if player.weapon == "plasma_gun":
                             player.fire_projectile(
                                 camera_x, camera_y, projectiles)
+                        elif player.weapon == "mini_gun":
+                            player.is_firing = True  # Start firing for mini gun
 
-            if player.weapon == "mini_gun":
-                for event in pygame.event.get():
-                    if event.type == pygame.QUIT:
-                        pygame.quit()
-                    elif event.type == pygame.MOUSEBUTTONDOWN:
-                        if event.button == 1:  # Left mouse button
-                            player.is_firing = True  # Indicate that the player is holding down the fire button
-                    elif event.type == pygame.MOUSEBUTTONUP:
-                        if event.button == 1:  # Left mouse button
-                            player.is_firing = False  # Stop firing when the button is released
+                elif event.type == pygame.MOUSEBUTTONUP:
+                    if event.button == 1:  # Left mouse button
+                        if player.weapon == "mini_gun":
+                            player.is_firing = False  # Stop firing for mini gun
 
-                if player.is_firing:
-                    player.fire_projectile(camera_x, camera_y, projectiles)
+            # Handle continuous firing for mini gun
+            if player.weapon == "mini_gun" and player.is_firing:
+                player.fire_projectile(camera_x, camera_y, projectiles)
 
             keys = pygame.key.get_pressed()
 
@@ -171,25 +144,25 @@ def main():
             # Update projectiles
             for projectile in projectiles[:]:
                 projectile.move(maze)
-                if projectile.explode:
+                if projectile.hit:
                     projectiles.remove(projectile)
-                    enemy_hit_sound.play()
+                    sound_manager.play("projectile_impact")
 
                 # Check for collisions with enemies
                 for enemy in enemies:
                     if projectile.check_collision(enemy) and projectile.player_projectile:
                         enemy.health -= 1
-                        enemy_hit_sound.play()
                         if projectile in projectiles:
                             projectiles.remove(projectile)
+                            sound_manager.play("projectile_impact")
                         if enemy.health <= 0:
                             kill_count += 1
                             enemy.respawn()
                 if projectile.check_collision(player) and not projectile.player_projectile:
                     player.health -= 1
-                    enemy_hit_sound.play()
                     if projectile in projectiles:
                         projectiles.remove(projectile)
+                        sound_manager.play("projectile_impact")
 
             # Check for game over
             if player.health <= 0:

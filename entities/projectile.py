@@ -3,6 +3,7 @@ import math
 from constants.game_rules import GAME_RULES
 from constants.file_paths import IMAGES_FOLDER
 from constants.maze_variants import MAZE_WIDTH, MAZE_HEIGHT
+from utils.sound_manager import sound_manager
 
 
 class Projectile:
@@ -20,7 +21,7 @@ class Projectile:
         self.speed = 10  # Speed of the projectile
 
         self.player_projectile = player_projectile
-        self.explode = False
+        self.hit = False
 
         # Calculate the direction from player to crosshair (target)
         dx = target_x - self.x
@@ -37,8 +38,6 @@ class Projectile:
         self.angle = math.degrees(math.atan2(dy, dx))  # Angle in degrees
         self.angle -= 90  # Offset to align the image
 
-        # PLAY PROJECTILE SOUND
-
     def can_move(self, x, y, maze):
         """Check if the projectile can move without hitting a wall."""
         col, row = int(x // GAME_RULES["TILE_SIZE"]
@@ -46,7 +45,7 @@ class Projectile:
 
         # If outside the bounds of the maze or inside a wall, return False
         if row < 0 or row >= MAZE_HEIGHT or col < 0 or col >= MAZE_WIDTH or maze.grid[row][col] == 1:
-            self.explode = True
+            self.hit = True
             return False  # Collision detected
 
         return True  # No collision

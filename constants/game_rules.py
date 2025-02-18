@@ -1,5 +1,6 @@
 import pygame
 
+# TODO: don't think this belongs here.
 pygame.init()
 info = pygame.display.Info()
 SCREEN_WIDTH, SCREEN_HEIGHT = info.current_w, info.current_h
