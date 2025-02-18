@@ -16,8 +16,6 @@ class Enemy:
         self.enemy_image = pygame.image.load(f"{IMAGES_FOLDER}/enemy.png")
         self.enemy_image = pygame.transform.smoothscale(
             self.enemy_image, (GAME_RULES["ENEMY_SIZE"], GAME_RULES["ENEMY_SIZE"]))
-        self.enemy_death_sound = pygame.mixer.Sound(
-            f"{SOUND_FX_FOLDER}/explode.wav")
         while True:
             x = random.randint(1, MAZE_WIDTH - 2)
             y = random.randint(1, MAZE_HEIGHT - 2)
@@ -243,7 +241,6 @@ class Enemy:
 
     def respawn(self):
         """Respawn the enemy at a random valid location in the maze."""
-        self.enemy_death_sound.play()
         while True:
             x = random.randint(1, MAZE_WIDTH - 2)
             y = random.randint(1, MAZE_HEIGHT - 2)

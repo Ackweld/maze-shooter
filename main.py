@@ -141,8 +141,8 @@ def main():
             for projectile in projectiles[:]:
                 projectile.move(maze)
                 if projectile.hit:
-                    projectiles.remove(projectile)
                     sound_manager.play("projectile_impact")
+                    projectiles.remove(projectile)
 
                 # Check for collisions with enemies
                 for enemy in enemies:
@@ -152,13 +152,14 @@ def main():
                             projectiles.remove(projectile)
                             sound_manager.play("projectile_impact")
                         if enemy.health <= 0:
-                            kill_count += 1
+                            sound_manager.play("explode")
                             enemy.respawn()
+                            kill_count += 1
                 if projectile.check_collision(player) and not projectile.player_projectile:
                     player.health -= 1
                     if projectile in projectiles:
-                        projectiles.remove(projectile)
                         sound_manager.play("projectile_impact")
+                        projectiles.remove(projectile)
 
             # Check for game over
             if player.health <= 0:
