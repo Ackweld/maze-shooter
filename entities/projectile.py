@@ -13,7 +13,7 @@ class Projectile:
         # Load projectile image
         self.projectile_image = pygame.image.load(
             f"{IMAGES_FOLDER}/{projectile_type}")
-        self.projectile_image = pygame.transform.scale(
+        self.projectile_image = pygame.transform.smoothscale(
             self.projectile_image, (GAME_RULES["PROJECTILE_SIZE"], GAME_RULES["PROJECTILE_SIZE"]))
 
         self.x = start_x + GAME_RULES["PLAYER_SIZE"] // 2

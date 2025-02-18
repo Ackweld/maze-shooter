@@ -14,17 +14,11 @@ from utils.sound_manager import sound_manager
 screen = pygame.display.set_mode(
     (SCREEN_WIDTH, SCREEN_HEIGHT))
 
-pygame.display.set_caption("MAZE SHOOTER")
-
 crosshair_image = pygame.image.load("assets/images/crosshair.png")
-crosshair_image = pygame.transform.scale(
+crosshair_image = pygame.transform.smoothscale(
     crosshair_image, (GAME_RULES["TILE_SIZE"], GAME_RULES["TILE_SIZE"]))
 
-# Set a default system cursor first (for fallback)
-pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_ARROW)
-
-# Then, set the custom crosshair cursor:
-pygame.mouse.set_visible(False)  # Hide the default cursor
+# Set the custom crosshair cursor:
 crosshair_width, crosshair_height = crosshair_image.get_size()
 
 

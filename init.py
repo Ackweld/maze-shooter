@@ -8,16 +8,15 @@ def initialize_game():
     # Initialize pygame
     pygame.init()
 
+    pygame.display.set_caption("MAZE SHOOTER")
+
     crosshair_image = pygame.image.load("assets/images/crosshair.png")
-    crosshair_image = pygame.transform.scale(
+    crosshair_image = pygame.transform.smoothscale(
         crosshair_image, (GAME_RULES["TILE_SIZE"], GAME_RULES["TILE_SIZE"]))
 
     # Set a default system cursor first (for fallback)
     pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_ARROW)
-
-    # Then, set the custom crosshair cursor:
     pygame.mouse.set_visible(False)  # Hide the default cursor
-    crosshair_width, crosshair_height = crosshair_image.get_size()
 
     # Initialize the mixer for sound
 

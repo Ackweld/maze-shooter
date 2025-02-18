@@ -24,7 +24,6 @@ class SoundManager:
         }
 
     def play(self, sound_name):
-        print(pygame.mixer.get_num_channels())
         if sound_name in self.sounds:
             sound = self.sounds[sound_name]
 
