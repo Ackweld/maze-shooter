@@ -3,5 +3,6 @@ COLORS = {
     "GRAY": (100, 100, 100),
     "WALL_COLOR": (100, 100, 100),
     "FLOOR_COLOR": (200, 200, 200),
-    "HEALTH_COLOR": (255, 0, 0)
+    "HEALTH_COLOR": (255, 0, 0),
+    "DARK_SLATE": (47, 79, 79)
 }

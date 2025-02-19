@@ -20,6 +20,7 @@ class Player:
         self.last_shot_time = 0
         self.fire_rate = 100
         self.is_firing = False
+        self.kill_count = 0
 
         while True:
             x = random.randint(1, MAZE_WIDTH - 2)

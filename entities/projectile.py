@@ -38,18 +38,6 @@ class Projectile:
         self.angle = math.degrees(math.atan2(dy, dx))  # Angle in degrees
         self.angle -= 90  # Offset to align the image
 
-    def can_move(self, x, y, maze):
-        """Check if the projectile can move without hitting a wall."""
-        col, row = int(x // GAME_RULES["TILE_SIZE"]
-                       ), int(y // GAME_RULES["TILE_SIZE"])
-
-        # If outside the bounds of the maze or inside a wall, return False
-        if row < 0 or row >= MAZE_HEIGHT or col < 0 or col >= MAZE_WIDTH or maze.grid[row][col] == 1:
-            self.hit = True
-            return False  # Collision detected
-
-        return True  # No collision
-
     def move(self, maze):
         """Move the projectile along the calculated path, stopping if it hits a wall."""
         new_x = self.x + self.dx
@@ -64,15 +52,17 @@ class Projectile:
             self.dx = 0
             self.dy = 0
 
-    def draw(self, surface, camera_x, camera_y):
-        """Draw the projectile with proper rotation based on movement."""
-        rotated_image = pygame.transform.rotate(
-            self.projectile_image, -self.angle)  # Rotate counter-clockwise
-        new_rect = rotated_image.get_rect(
-            center=(self.x - camera_x, self.y - camera_y))
+    def can_move(self, x, y, maze):
+        """Check if the projectile can move without hitting a wall."""
+        col, row = int(x // GAME_RULES["TILE_SIZE"]
+                       ), int(y // GAME_RULES["TILE_SIZE"])
 
-        # Draw the rotated image
-        surface.blit(rotated_image, new_rect.topleft)
+        # If outside the bounds of the maze or inside a wall, return False
+        if row < 0 or row >= MAZE_HEIGHT or col < 0 or col >= MAZE_WIDTH or maze.grid[row][col] == 1:
+            self.hit = True
+            return False  # Collision detected
+
+        return True  # No collision
 
     def check_collision(self, enemy):
         """Check if the projectile collides with an enemy, considering enemy size."""
@@ -91,3 +81,13 @@ class Projectile:
             return True
 
         return False
+
+    def draw(self, surface, camera_x, camera_y):
+        """Draw the projectile with proper rotation based on movement."""
+        rotated_image = pygame.transform.rotate(
+            self.projectile_image, -self.angle)  # Rotate counter-clockwise
+        new_rect = rotated_image.get_rect(
+            center=(self.x - camera_x, self.y - camera_y))
+
+        # Draw the rotated image
+        surface.blit(rotated_image, new_rect.topleft)

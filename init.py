@@ -1,6 +1,7 @@
 import pygame
 from constants.game_rules import GAME_RULES, SCREEN_WIDTH, SCREEN_HEIGHT
 from constants.file_paths import MUSIC_FOLDER
+from entities.player import Player
 
 
 def initialize_game():

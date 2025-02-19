@@ -71,6 +71,92 @@ def game_over_screen():
                     pygame.quit()
 
 
+def handle_user_input(player, camera_x, camera_y, projectiles):
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            pygame.quit()
+            return  # Ensure the program exits cleanly after quitting
+
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            if event.button == 1:  # Left mouse button
+                if player.weapon == "plasma_gun":
+                    player.fire_projectile(
+                        camera_x, camera_y, projectiles)
+                elif player.weapon == "mini_gun":
+                    player.is_firing = True  # Start firing for mini gun
+
+        elif event.type == pygame.MOUSEBUTTONUP:
+            if event.button == 1:  # Left mouse button
+                if player.weapon == "mini_gun":
+                    player.is_firing = False  # Stop firing for mini gun
+
+
+def update_enemies(enemies, player, projectiles):
+    # Update enemies, check for damage, and fire projectiles
+    for enemy in enemies:
+        enemy.set_target(player)
+        enemy.move_towards_target()
+        enemy.fire_projectile(player, projectiles)
+
+        # Check for collision with player
+        if enemy.check_attack(player):
+            sound_manager.play("punch")
+            player.health -= 2
+
+
+def update_projectiles(projectiles, maze, player, enemies):
+
+    for projectile in projectiles[:]:
+        projectile.move(maze)
+        if projectile.hit:
+            sound_manager.play("projectile_impact")
+            projectiles.remove(projectile)
+
+        # Check for collisions with enemies
+        for enemy in enemies:
+            if projectile.check_collision(enemy) and projectile.player_projectile:
+                enemy.health -= 1
+                if projectile in projectiles:
+                    projectiles.remove(projectile)
+                    sound_manager.play("projectile_impact")
+                if enemy.health <= 0:
+                    sound_manager.play("explode")
+                    enemy.respawn()
+                    player.kill_count += 1
+        if projectile.check_collision(player) and not projectile.player_projectile:
+            player.health -= 1
+            if projectile in projectiles:
+                sound_manager.play("projectile_impact")
+                projectiles.remove(projectile)
+
+
+def render(maze, player, enemies, projectiles, camera_x, camera_y):
+    # Draw everything
+    screen.fill(COLORS["DARK_SLATE"])
+    maze.draw(screen, camera_x, camera_y)
+    player.draw(screen, camera_x, camera_y)
+    player.draw_health(screen)
+
+    for projectile in projectiles:
+        projectile.draw(screen, camera_x, camera_y)
+
+    for enemy in enemies:
+        enemy.draw(screen, camera_x, camera_y)
+
+    # Draw kill counter in top right
+    font = pygame.font.Font(None, 40)
+    kill_text = font.render(
+        f"Kills: {player.kill_count}", True, (255, 255, 255))
+    screen.blit(kill_text, (SCREEN_WIDTH - 150, 20))
+
+    # Draw custom crosshair cursor
+    mouse_x, mouse_y = pygame.mouse.get_pos()
+    screen.blit(crosshair_image, (mouse_x - crosshair_width //
+                2, mouse_y - crosshair_height // 2))
+
+    pygame.display.flip()
+
+
 def main():
     initialize_game()
 
@@ -82,82 +168,28 @@ def main():
         enemies = [Enemy(maze) for _ in range(GAME_RULES["ENEMY_COUNT"])]
         projectiles = []  # List to store active projectiles
 
-        kill_count = 0
         camera_x, camera_y = 0, 0  # Camera position
         running = True
         while running:
             clock.tick(GAME_RULES["FPS"])
 
             # Update weapon if kill count is greater than 0
-            if kill_count > 0:
+            if player.kill_count > 0:
                 player.weapon = "mini_gun"
 
-            # Handle events
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    pygame.quit()
-                    return  # Ensure the program exits cleanly after quitting
-
-                if event.type == pygame.MOUSEBUTTONDOWN:
-                    if event.button == 1:  # Left mouse button
-                        if player.weapon == "plasma_gun":
-                            player.fire_projectile(
-                                camera_x, camera_y, projectiles)
-                        elif player.weapon == "mini_gun":
-                            player.is_firing = True  # Start firing for mini gun
-
-                elif event.type == pygame.MOUSEBUTTONUP:
-                    if event.button == 1:  # Left mouse button
-                        if player.weapon == "mini_gun":
-                            player.is_firing = False  # Stop firing for mini gun
+            handle_user_input(player, camera_x, camera_y, projectiles)
 
             # Handle continuous firing for mini gun
             if player.weapon == "mini_gun" and player.is_firing:
                 player.fire_projectile(camera_x, camera_y, projectiles)
 
-            keys = pygame.key.get_pressed()
-
             # Move the player
+            keys = pygame.key.get_pressed()
             player.move(keys, maze)
 
-            # Update enemies, check for damage, and fire projectiles
-            for enemy in enemies:
-                enemy.set_target(player)
-                enemy.move_towards_target()
-                enemy.fire_projectile(player, projectiles)
+            update_enemies(enemies, player, projectiles)
 
-                # Check for collision with player
-                if enemy.check_attack(player):
-                    sound_manager.play("punch")
-                    player.health -= 2
-
-            # Update projectiles
-            for projectile in projectiles[:]:
-                projectile.move(maze)
-                if projectile.hit:
-                    sound_manager.play("projectile_impact")
-                    projectiles.remove(projectile)
-
-                # Check for collisions with enemies
-                for enemy in enemies:
-                    if projectile.check_collision(enemy) and projectile.player_projectile:
-                        enemy.health -= 1
-                        if projectile in projectiles:
-                            projectiles.remove(projectile)
-                            sound_manager.play("projectile_impact")
-                        if enemy.health <= 0:
-                            sound_manager.play("explode")
-                            enemy.respawn()
-                            kill_count += 1
-                if projectile.check_collision(player) and not projectile.player_projectile:
-                    player.health -= 1
-                    if projectile in projectiles:
-                        sound_manager.play("projectile_impact")
-                        projectiles.remove(projectile)
-
-            # Check for game over
-            if player.health <= 0:
-                running = False
+            update_projectiles(projectiles, maze, player, enemies)
 
             # Update the camera
             camera_x = player.x - SCREEN_WIDTH // 2 + \
@@ -165,30 +197,11 @@ def main():
             camera_y = player.y - SCREEN_HEIGHT // 2 + \
                 GAME_RULES["TILE_SIZE"] // 2
 
-            # Draw everything
-            screen.fill(COLORS["GRAY"])
-            maze.draw(screen, camera_x, camera_y)
-            player.draw(screen, camera_x, camera_y)
-            player.draw_health(screen)
+            render(maze, player, enemies, projectiles, camera_x, camera_y)
 
-            for projectile in projectiles:
-                projectile.draw(screen, camera_x, camera_y)
-
-            for enemy in enemies:
-                enemy.draw(screen, camera_x, camera_y)
-
-            # Draw kill counter in top right
-            font = pygame.font.Font(None, 40)
-            kill_text = font.render(
-                f"Kills: {kill_count}", True, (255, 255, 255))
-            screen.blit(kill_text, (SCREEN_WIDTH - 150, 20))
-
-            # Draw custom crosshair cursor
-            mouse_x, mouse_y = pygame.mouse.get_pos()
-            screen.blit(crosshair_image, (mouse_x - crosshair_width //
-                        2, mouse_y - crosshair_height // 2))
-
-            pygame.display.flip()
+            # Check for game over
+            if player.health <= 0:
+                running = False
 
         # Show game over screen and restart if needed
         game_over_screen()
